@@ -25,8 +25,10 @@ export async function GET(req: NextRequest) {
         repoName: item.full_name,
         repoUrl: item.html_url,
         repoStars: item.stargazers_count,
-        repoLanguage: item.language ?? 'Unknown',
-        description: item.description ?? '',
+        repoLanguage: item.language ?? null,
+        repoOwner: item.owner?.login ?? null,
+        repoCreatedAt: item.created_at ? new Date(item.created_at).getFullYear() : null,
+        description: item.description ?? null,
     }))
 
     return NextResponse.json({ repos })

@@ -6,13 +6,16 @@ export interface Vector2 {
 export interface FoodSource {
     id: string
     position: Vector2
-    value: number        // "tamanho" da comida
+    value: number
     discovered: boolean
-    repoName?: string      // nome do repo
-    repoUrl?: string       // link pro GitHub
-    repoStars?: number     // stars
-    repoLanguage?: string  // linguagem principal
-    }
+    repoName?: string
+    repoUrl?: string
+    repoStars?: number
+    repoLanguage?: string
+    repoOwner?: string    
+    repoCreatedAt?: string 
+    description?: string
+}
 
 export type AntState = 'exploring' | 'returning'
 

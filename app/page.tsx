@@ -8,7 +8,7 @@ export default function Home() {
 
       <SimulationCanvasWrapper />
 
-      <div className="absolute top-4 right-4 flex flex-col gap-3 w-72">
+      <div className="absolute top-4 left-4 flex flex-col gap-3 w-80">
         <SearchBarWrapper />
         <SimulationSidebarWrapper />
       </div>

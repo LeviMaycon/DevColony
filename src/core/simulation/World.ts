@@ -4,7 +4,7 @@ import { createAnt, updateAnt } from './Ant'
 import { PheromoneGrid, createPheromoneGrid, depositPheromone, evaporatePheromone } from './Pheromone'
 
 // if you put more 1000 probaly you chrome crash
-const ANT_COUNT = 90
+const ANT_COUNT = 50
 const EVAPORATION_RATE = 0.008
 const DEPOSIT_AMOUNT = 0.15
 
