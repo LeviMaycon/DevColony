@@ -5,6 +5,7 @@ import * as PIXI from 'pixi.js'
 import { useWorldStore } from '../../simulation/World'
 import { AntGraphic, createAntGraphic, updateAntLegs } from '../../simulation/Ant'
 import { generatePositions } from '../../simulation/placement'
+import { setupCamera } from '../../simulation/Camera'
 
 const LANG_COLORS: Record<string, number> = {
     Python: 0x3572A5,
@@ -28,6 +29,7 @@ export default function SimulationCanvas() {
     const foodGraphicsRef = useRef<Map<string, PIXI.Container>>(new Map())
     const pheroLayerRef = useRef<PIXI.Graphics | null>(null)
     const sceneLayerRef = useRef<PIXI.Container | null>(null)
+    const cameraCleanupRef = useRef<(() => void) | null>(null)
     const connLayerRef = useRef<PIXI.Graphics | null>(null)
 
     useEffect(() => {
@@ -55,17 +57,24 @@ export default function SimulationCanvas() {
             containerRef.current.appendChild(app.canvas)
             appRef.current = app
 
+            // worldContainer é o pai de tudo — câmera age sobre ele
+            const worldContainer = new PIXI.Container()
+            app.stage.addChild(worldContainer)
+
+            // Tudo dentro do worldContainer
             const pheroLayer = new PIXI.Graphics()
-            app.stage.addChild(pheroLayer)
+            worldContainer.addChild(pheroLayer)
             pheroLayerRef.current = pheroLayer
 
             const sceneLayer = new PIXI.Container()
-            app.stage.addChild(sceneLayer)
+            worldContainer.addChild(sceneLayer)
             sceneLayerRef.current = sceneLayer
 
             const connLayer = new PIXI.Graphics()
             sceneLayer.addChild(connLayer)
             connLayerRef.current = connLayer
+
+            cameraCleanupRef.current = setupCamera(app, worldContainer)
 
             await PIXI.Assets.load(['/beetle-blue.png', '/beetle-gold.png'])
             if (destroyed) return
@@ -114,7 +123,6 @@ export default function SimulationCanvas() {
                 const connLayer = connLayerRef.current
                 if (!scene || !phero || !connLayer) return
 
-                // Feromônio
                 if (frameCount % 3 === 0) {
                     phero.clear()
                     const { values, width, cellSize } = pheromones
@@ -128,7 +136,6 @@ export default function SimulationCanvas() {
                     }
                 }
 
-                // Conexões por linguagem — redesenha a cada frame
                 connLayer.clear()
                 if (selectedLanguages.length > 0) {
                     selectedLanguages.forEach((lang) => {
@@ -155,7 +162,6 @@ export default function SimulationCanvas() {
                     })
                 }
 
-                // Limpeza de comidas removidas
                 const activeFoodIds = new Set(foods.map((f) => f.id))
                 foodMap.forEach((container, id) => {
                     if (!activeFoodIds.has(id)) {
@@ -165,7 +171,6 @@ export default function SimulationCanvas() {
                     }
                 })
 
-                // Comidas
                 foods.forEach((food) => {
                     if (foodMap.has(food.id)) return
                     const container = new PIXI.Container()
@@ -196,8 +201,10 @@ export default function SimulationCanvas() {
                                 fontSize: 9,
                                 fill: '#3fb950',
                                 fontFamily: 'monospace',
-                            })
+                            }),
+                            resolution: 4,
                         })
+                        label.resolution =4
                         label.anchor.set(0.5, 1)
                         label.x = 0
                         label.y = -radius - 4
@@ -235,7 +242,6 @@ export default function SimulationCanvas() {
                     }
                 })
 
-                // Formigueiro
                 if (!scene.getChildByLabel('mound')) {
                     const mound = new PIXI.Graphics()
                     mound.label = 'mound'
@@ -254,7 +260,6 @@ export default function SimulationCanvas() {
                     scene.addChild(mound)
                 }
 
-                // Formigas
                 ants.forEach((ant) => {
                     const isReturning = ant.state === 'returning'
                     let graphic = antMap.get(ant.id)
@@ -292,6 +297,7 @@ export default function SimulationCanvas() {
 
         return () => {
             destroyed = true
+            cameraCleanupRef.current?.()
             if (appRef.current) {
                 appRef.current.destroy(true)
                 appRef.current = null

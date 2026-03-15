@@ -10,33 +10,34 @@ import { cn } from "@/lib/utils"
 import { Resizable } from "re-resizable"
 
 export default function SimulationSidebar() {
-    const { ants, collectedRepos, selectedAntId, selectAnt, foods, selectedLanguages, toggleLanguage } = useWorldStore()
+    const { ants, collectedRepos, selectedAntId, selectAnt, toggleLanguage } = useWorldStore()
 
     return (
         <TooltipProvider delayDuration={300}>
             <Resizable
-                defaultSize={{ width: 280, height: 600 }}
+                defaultSize={{ width: 280, height: '100vh' }}
                 minWidth={200}
                 maxWidth={500}
-                minHeight={300}
                 enable={{
                     top: false,
                     right: false,
-                    bottom: true,
+                    bottom: false,
                     left: true,
                     topRight: false,
                     bottomRight: false,
-                    bottomLeft: true,
+                    bottomLeft: false,
                     topLeft: false,
                 }}
-                style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    height: '100vh',
+                    overflowY: 'auto',
+                    paddingBottom: '16px',
+                }}
             >
                 <AntsPanel ants={ants} selectedId={selectedAntId} onSelect={selectAnt} />
-                <LanguageFilter
-                    foods={foods}
-                    selectedLanguages={selectedLanguages}
-                    onToggle={toggleLanguage}
-                />
                 <ColonyPanel repos={collectedRepos} />
             </Resizable>
         </TooltipProvider>
@@ -141,7 +142,7 @@ function AntsPanel({
     const returning = ants.filter((a) => a.state === 'returning').length
 
     return (
-        <div className="flex flex-col flex-1 min-h-0 rounded-md border border-[#30363d] bg-[#0d1117]">
+        <div className="flex flex-col rounded-md border border-[#30363d] bg-[#0d1117] max-h-70">
             <div className="flex items-center justify-between px-3 py-2.5 shrink-0">
                 <span className="text-[10px] font-semibold tracking-widest uppercase text-[#8b949e]">
                     Formigas
@@ -250,7 +251,7 @@ function AntRow({
 
 function ColonyPanel({ repos }: { repos: FoodSource[] }) {
     return (
-        <div className="flex flex-col rounded-md border border-[#30363d] bg-[#0d1117] max-h-75">
+        <div className="flex flex-col rounded-md border border-[#30363d] bg-[#0d1117] max-h-60">
             <div className="flex items-center justify-between px-3 py-2.5 shrink-0">
                 <span className="text-[10px] font-semibold tracking-widest uppercase text-[#8b949e]">
                     Formigueiro
