@@ -8,6 +8,7 @@ const ANT_COUNT = 50
 const EVAPORATION_RATE = 0.008
 const DEPOSIT_AMOUNT = 0.15
 
+
 interface WorldState {
     ants: AntEntity[]
     foods: FoodSource[]
@@ -16,6 +17,8 @@ interface WorldState {
     pheromones: PheromoneGrid
     selectedAntId: string | null
     collectedRepos: FoodSource[]
+    selectedLanguages: string[]
+    toggleLanguage: (lang: string) => void
     setWorldSize: (size: Vector2) => void
     setColony: (pos: Vector2) => void
     clearFoods: () => void
@@ -31,6 +34,12 @@ export const useWorldStore = create<WorldState>((set, get) => ({
     colony: { x: 400, y: 300 },
     worldSize: { x: 800, y: 600 },
     pheromones: createPheromoneGrid(800, 600, 8),
+    selectedLanguages:[],
+    toggleLanguage: (lang) => set((s) => ({
+        selectedLanguages: s.selectedLanguages.includes(lang)
+        ? s.selectedLanguages.filter((l) => l !== lang)
+        : [...s.selectedLanguages, lang]
+    })),
     selectedAntId: null,
     collectedRepos: [],
 
