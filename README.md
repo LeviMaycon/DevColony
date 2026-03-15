@@ -2,7 +2,7 @@
 
 Uma simulação de colônia de formigas que busca repositórios no GitHub como "comida". As formigas exploram o canvas, encontram repos e os carregam de volta ao formigueiro — usando o algoritmo ACO (Ant Colony Optimization).
 
-![DevColony Preview](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js) ![Pixi.js](https://img.shields.io/badge/Pixi.js-v8-e72264?style=flat-square) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript) ![Zustand](https://img.shields.io/badge/Zustand-5-orange?style=flat-square)
+![DevColony Preview](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js) ![Pixi.js](https://img.shields.io/badge/Pixi.js-v8-e72264?style=flat-square) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript) ![Zustand](https://img.shields.io/badge/Zustand-5-orange?style=flat-square)
 
 ---
 
@@ -33,7 +33,7 @@ O tamanho de cada comida é proporcional às stars do repo. Trilhas de feromôni
 
 ```bash
 # Clone o repositório
-git clone https://github.com/seu-usuario/devcolony.git
+git clone https://github.com/LeviMaycon/devcolony.git
 cd devcolony
 
 # Instale as dependências
