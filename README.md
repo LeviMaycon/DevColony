@@ -1,143 +1,167 @@
 # DevColony
 
-Uma simulação de colônia de insetos que busca repositórios no GitHub como "comida". Os insetos exploram o canvas, encontram repos e os carregam de volta ao formigueiro — usando o algoritmo ACO (Ant Colony Optimization).
+An ant colony simulation that hunts GitHub repositories as food. Insects explore a canvas, discover repos, and carry them back to the colony using pheromone trails and the ACO (Ant Colony Optimization) algorithm.
 
-![DevColony Preview](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js) ![Pixi.js](https://img.shields.io/badge/Pixi.js-v8-e72264?style=flat-square) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript) ![Zustand](https://img.shields.io/badge/Zustand-5-orange?style=flat-square)
+![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)
+![Pixi.js](https://img.shields.io/badge/Pixi.js-v8-e72264?style=flat-square)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript)
+![Zustand](https://img.shields.io/badge/Zustand-5-orange?style=flat-square)
 
 <img src="https://raw.githubusercontent.com/LeviMaycon/DevColony/main/public/demo.png" width="800"/>
----
-
-## Como funciona
-
-1. Você digita um tópico (ex: `fire simulation python`)
-2. A simulação busca os 100 repositórios mais populares do GitHub com esse tema
-3. Cada repo aparece como uma "comida" espalhada pelo canvas
-4. As insetos exploram, encontram os repos e os carregam de volta ao formigueiro
-5. O painel lateral mostra quais insetos estão carregando o quê e quais repos já foram coletados
-
-O tamanho de cada comida é proporcional às stars do repo. Trilhas de feromônio se formam nos caminhos mais usados e evaporam com o tempo.
 
 ---
 
-## Tecnologias
+## How it works
 
-- **Next.js 16** — framework React com App Router
-- **Pixi.js v8** — renderização 2D via WebGL
-- **Zustand** — gerenciamento de estado da simulação
-- **TypeScript** — tipagem estática
-- **Tailwind CSS** — estilização dos painéis
-- **GitHub Search API** — fonte dos repositórios
+1. Type a topic (e.g. `fire simulation python`)
+2. The simulation fetches the 100 most popular GitHub repositories for that topic
+3. Each repo appears as a food source scattered across the canvas
+4. Insects explore, find repos, and carry them back to the colony
+5. The sidebar shows which insects are carrying what, and which repos have already been collected
+
+Food size is proportional to the repo's star count. Pheromone trails form along frequently used paths and evaporate over time.
 
 ---
 
-## Instalação
+## Features
+
+- Ant colony simulation using a simplified ACO algorithm
+- GitHub repository search with real-time results
+- Pheromone trail system with evaporation
+- Sprite-based insects with walking animation
+- Zoom and pan canvas navigation
+- Language filter with color-coded connections between repos
+- Repo hover card with owner profile, stats, last commit date, and README preview
+- Click on a repo to open it on GitHub
+- Search history saved to localStorage
+- Trending repositories (last 7 days)
+- Year filter for repository creation date
+- Share search via URL
+- Resizable sidebar panels
+
+---
+
+## Tech stack
+
+- **Next.js 15** — React framework with App Router
+- **Pixi.js v8** — WebGL 2D renderer
+- **Zustand** — simulation state management
+- **TypeScript** — static typing
+- **Tailwind CSS** — UI styling
+- **GitHub Search API** — repository data source
+- **re-resizable** — resizable sidebar panels
+
+---
+
+## Installation
 
 ```bash
-# Clone o repositório
-git clone https://github.com/LeviMaycon/devcolony.git
-cd devcolony
-
-# Instale as dependências
+git clone https://github.com/LeviMaycon/DevColony.git
+cd DevColony
 npm install
-
-# Crie o arquivo de variáveis de ambiente
 cp .env.example .env.local
 ```
 
-Edite o `.env.local` com seu token do GitHub:
+Edit `.env.local` with your GitHub token:
 
 ```env
-GITHUB_TOKEN=ghp_seu_token_aqui
+GITHUB_TOKEN=ghp_your_token_here
 ```
 
-Para gerar um token: [github.com/settings/tokens](https://github.com/settings/tokens) — escopo `public_repo` é suficiente.
+Generate a token at [github.com/settings/tokens](https://github.com/settings/tokens) — `public_repo` scope is sufficient.
 
 ```bash
-# Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
-Acesse [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## Estrutura do projeto
+## Project structure
 
 ```
 src/
   core/
     simulation/
-      Ant.ts          — lógica e visual dos insetos
-      World.ts        — estado global da simulação (Zustand)
-      Pheromone.ts    — grid de feromônio com evaporação
-      types.ts        — interfaces TypeScript
+      Ant.ts              insect logic, sprite animation, and graphics
+      World.ts            global simulation state (Zustand)
+      Pheromone.ts        pheromone grid with evaporation
+      Camera.ts           zoom and pan controls
+      placement.ts        grid-based position generation
+      types.ts            TypeScript interfaces
     components/
       canvas/
-        SimulationCanvas.tsx     — canvas Pixi.js principal
-        SimulationCanvasWrapper.tsx
+        SimulationCanvas.tsx        main Pixi.js canvas
+        SimulationCanvasWrapper.tsx client-side wrapper
       ui/
-        SimulationSidebar.tsx    — painéis de insetos e formigueiro
-        SearchBar.tsx            — busca de tópicos
+        SimulationSidebar.tsx       insects panel and colony panel
+        SearchBar.tsx               topic search with history and trending
+        LanguageFilterPanel.tsx     language filter with connection lines
+        RepoHoverCard.tsx           hover card with repo and owner details
     hooks/
-      useGitHubSearch.ts         — integração com a API do GitHub
+      useGitHubSearch.ts    GitHub API integration
+      useSearchHistory.ts   localStorage search history
+      useShareSearch.ts     URL-based search sharing
 app/
   api/
     github/
-      search/
-        route.ts      — proxy para a GitHub Search API
+      search/route.ts     GitHub Search API proxy with enriched data
+      trending/route.ts   trending repositories (last 7 days)
+      avatar/route.ts     avatar image proxy
   page.tsx
   layout.tsx
 public/
-  ant-sprite.png      — sprite sheet dos insetos
+  beetle-blue.png   blue insect sprite sheet
+  beetle-gold.png   gold insect sprite sheet
 ```
 
 ---
 
-## Algoritmo
+## Algorithm
 
-As insetos implementam uma versão simplificada do **ACO (Ant Colony Optimization)**:
+Insects implement a simplified version of the **ACO (Ant Colony Optimization)** algorithm:
 
-- **Exploração** — cada formiga se move com leve aleatoriedade (`WANDER_STRENGTH`)
-- **Detecção** — ao chegar perto de um repo não descoberto, a formiga muda para estado `returning`
-- **Retorno** — a formiga navega diretamente de volta à colônia depositando feromônio
-- **Evaporação** — o feromônio evapora gradualmente, favorecendo trilhas mais ativas
-- **Rebote** — insetos ricocheteiam nas bordos do canvas
+- **Exploration** — each insect moves with slight randomness (`WANDER_STRENGTH`)
+- **Detection** — when close to an undiscovered repo, the insect switches to `returning` state
+- **Return** — the insect navigates directly back to the colony, depositing pheromone along the way
+- **Evaporation** — pheromone evaporates gradually, reinforcing frequently used paths
+- **Bouncing** — insects bounce off canvas edges
 
 ---
 
-## Variáveis de configuração
+## Configuration
 
-Em `src/core/simulation/World.ts`:
+In `src/core/simulation/World.ts`:
 
 ```ts
-const ANT_COUNT        = 20     // número de insetos
-const EVAPORATION_RATE = 0.008  // velocidade de evaporação do feromônio
-const DEPOSIT_AMOUNT   = 0.15   // quantidade de feromônio depositada por tick
+const ANT_COUNT        = 20     // number of insects
+const EVAPORATION_RATE = 0.008  // pheromone evaporation speed per tick
+const DEPOSIT_AMOUNT   = 0.15   // pheromone deposited per tick
 ```
 
-Em `src/core/simulation/Ant.ts`:
+In `src/core/simulation/Ant.ts`:
 
 ```ts
-const SPEED           = 2    // velocidade base dos insetos
-const WANDER_STRENGTH = 0.4  // aleatoriedade do movimento de exploração
+const SPEED           = 2    // base movement speed
+const WANDER_STRENGTH = 0.4  // exploration randomness
 ```
 
 ---
 
-## Features planejados
+## Planned features
 
-- [ ] Tamanho da formiga proporcional às stars do repo
-- [ ] Tooltip com preview do repo ao passar o mouse
-- [ ] Histórico de buscas com localStorage
-- [ ] Modo foco — câmera segue a formiga selecionada
-- [ ] Estatísticas em tempo real — gráfico de repos coletados
-- [ ] Exportar repos coletados como `.json` ou `.csv`
-- [ ] Slider de velocidade da simulação
-- [ ] Modo noturno/diurno automático baseado no horário
-- [ ] Web Worker para o loop de simulação
+- [ ] Camera mode — follow a selected insect across the canvas
+- [ ] Export collected repos as `.json` or `.csv`
+- [ ] Real-time statistics — repos collected per minute chart
+- [ ] Presentation mode — fullscreen canvas without UI
+- [ ] Speed slider — adjust simulation speed
+- [ ] Web Worker — move tick loop off the main thread
+- [ ] Related repo connections — link repos that reference each other
+- [ ] Multiplayer — shared canvas via WebSocket
 
 ---
 
-## Licença
+## License
 
 MIT
