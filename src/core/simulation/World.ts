@@ -18,9 +18,11 @@ interface WorldState {
     selectedAntId: string | null
     collectedRepos: FoodSource[]
     selectedLanguages: string[]
+    hoveredFood: FoodSource | null
     toggleLanguage: (lang: string) => void
     setWorldSize: (size: Vector2) => void
     setColony: (pos: Vector2) => void
+    setHoveredFood: (food: FoodSource | null) => void
     clearFoods: () => void
     tick: (delta: number) => void
     addFood: (food: FoodSource) => void
@@ -40,6 +42,8 @@ export const useWorldStore = create<WorldState>((set, get) => ({
         ? s.selectedLanguages.filter((l) => l !== lang)
         : [...s.selectedLanguages, lang]
     })),
+    hoveredFood: null,
+    setHoveredFood: (food) => set({ hoveredFood: food }),
     selectedAntId: null,
     collectedRepos: [],
 
