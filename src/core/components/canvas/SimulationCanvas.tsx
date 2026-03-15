@@ -176,6 +176,21 @@ export default function SimulationCanvas() {
                     const container = new PIXI.Container()
                     const radius = food.value / 1.9
 
+                    container.eventMode = 'static'
+                    container.cursor = 'pointer'
+
+                    container.on('pointerenter', () => {
+                        useWorldStore.getState().setHoveredFood(food)
+                    })
+
+                    container.on('pointerleave', () => {
+                        useWorldStore.getState().setHoveredFood(null)
+                    })
+
+                    container.on('pointertap', () => {
+                        if (food.repoUrl) window.open(food.repoUrl, '_blank')
+                    })
+
                     const glow = new PIXI.Graphics()
                     glow.circle(0, 0, radius + 6)
                     glow.fill({ color: 0x3fb950, alpha: 0.08 })

@@ -1,5 +1,6 @@
 import SimulationCanvasWrapper from "@/src/core/components/canvas/SimulationCanvasWrapper"
 import LanguageFilterWrapper from "@/src/core/components/ui/LanguageFilterWrapper"
+import RepoHoverCardWrapper from "@/src/core/components/ui/RepoHoverCardWrapper"
 import SearchBarWrapper from "@/src/core/components/ui/SearchBarWrapper"
 import SimulationSidebarWrapper from "@/src/core/components/ui/SimulationSidebarWrapper"
 
@@ -25,6 +26,8 @@ export default function Home() {
         scroll para zoom · arrastar para mover
       </div>
 
+      <RepoHoverCardWrapper />
+    
     </main>
   )
 }
