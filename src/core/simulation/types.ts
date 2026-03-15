@@ -12,8 +12,9 @@ export interface FoodSource {
     repoUrl?: string
     repoStars?: number
     repoLanguage?: string
-    repoOwner?: string    
-    repoCreatedAt?: string 
+    repoOwner?: string
+    repoOwnerAvatar?: string
+    repoCreatedAt?: string
     description?: string
 }
 

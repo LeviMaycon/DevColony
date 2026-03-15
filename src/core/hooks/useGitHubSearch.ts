@@ -8,9 +8,11 @@ interface GitHubRepo {
     repoStars: number
     repoLanguage: string
     repoOwner: string
+    repoOwnerAvatar: string
     repoCreatedAt: string
     description: string
 }
+
 export function useGitHubSearch() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -38,6 +40,7 @@ export function useGitHubSearch() {
                 repoStars: repo.repoStars,
                 repoLanguage: repo.repoLanguage,
                 repoOwner: repo.repoOwner,
+                repoOwnerAvatar: repo.repoOwnerAvatar,
                 repoCreatedAt: repo.repoCreatedAt,
                 description: repo.description,
             }))

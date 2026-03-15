@@ -9,7 +9,7 @@ export default function SimulationCanvas() {
     const containerRef = useRef<HTMLDivElement>(null)
     const appRef = useRef<PIXI.Application | null>(null)
     const antGraphicsRef = useRef<Map<string, AntGraphic>>(new Map())
-    const foodGraphicsRef = useRef<Map<string, PIXI.Graphics>>(new Map())
+    const foodGraphicsRef = useRef<Map<string, PIXI.Container>>(new Map())
     const pheroLayerRef = useRef<PIXI.Graphics | null>(null)
     const sceneLayerRef = useRef<PIXI.Container | null>(null)
 
@@ -68,6 +68,10 @@ export default function SimulationCanvas() {
                             repoUrl: repo.repoUrl,
                             repoStars: repo.repoStars,
                             repoLanguage: repo.repoLanguage,
+                            repoOwner: repo.repoOwner,
+                            repoOwnerAvatar: repo.repoOwnerAvatar,
+                            repoCreatedAt: repo.repoCreatedAt,
+                            description: repo.description,
                         })
                     })
                 })
@@ -81,10 +85,10 @@ export default function SimulationCanvas() {
                 useWorldStore.getState().tick(ticker.deltaTime)
 
                 const { ants, foods, colony, pheromones, selectedAntId } = useWorldStore.getState()
-                const antMap  = antGraphicsRef.current
+                const antMap = antGraphicsRef.current
                 const foodMap = foodGraphicsRef.current
-                const phero   = pheroLayerRef.current
-                const scene   = sceneLayerRef.current
+                const phero = pheroLayerRef.current
+                const scene = sceneLayerRef.current
                 if (!scene || !phero) return
 
                 if (frameCount % 3 === 0) {
@@ -101,39 +105,40 @@ export default function SimulationCanvas() {
                 }
 
                 const activeFoodIds = new Set(foods.map((f) => f.id))
-                foodMap.forEach((gfx, id) => {
+                foodMap.forEach((container, id) => {
                     if (!activeFoodIds.has(id)) {
-                        scene.removeChild(gfx)
-                        gfx.destroy()
+                        scene.removeChild(container)
+                        container.destroy()
                         foodMap.delete(id)
                     }
                 })
 
                 foods.forEach((food) => {
                     if (foodMap.has(food.id)) return
+                    const container = new PIXI.Container()
+                    const radius = food.value / 1.9
 
-                    const gfx = new PIXI.Graphics()
-                    const radius = food.value / 3
+                    const glow = new PIXI.Graphics()
+                    glow.circle(0, 0, radius + 6)
+                    glow.fill({ color: 0x3fb950, alpha: 0.08 })
+                    glow.circle(0, 0, radius + 3)
+                    glow.fill({ color: 0x3fb950, alpha: 0.15 })
+                    container.addChild(glow)
 
-                    if (!food.discovered) {
-                        gfx.circle(food.position.x, food.position.y, radius + 5)
-                        gfx.fill({ color: 0x3fb950, alpha: 0.06 })
-                        gfx.circle(food.position.x, food.position.y, radius + 2)
-                        gfx.fill({ color: 0x3fb950, alpha: 0.12 })
-                    }
+                    const fallback = new PIXI.Graphics()
+                    fallback.circle(0, 0, radius)
+                    fallback.fill({ color: 0x238636 })
+                    container.addChild(fallback)
 
-                    gfx.circle(food.position.x, food.position.y, radius)
-                    gfx.fill({ color: food.discovered ? 0x21262d : 0x238636 })
+                    const border = new PIXI.Graphics()
+                    border.circle(0, 0, radius)
+                    border.setStrokeStyle({ width: 1, color: 0x3fb950, alpha: 0.5 })
+                    border.stroke()
+                    container.addChild(border)
 
-                    if (!food.discovered) {
-                        gfx.circle(food.position.x, food.position.y, radius)
-                        gfx.setStrokeStyle({ width: 0.5, color: 0x3fb950, alpha: 0.4 })
-                        gfx.stroke()
-                    }
-
-                    if (food.repoName && !food.discovered) {
+                    if (food.repoName) {
                         const label = new PIXI.Text({
-                            text: food.repoUrl ?? food.repoName,
+                            text: food.repoName.split('/')[1] ?? food.repoName,
                             style: new PIXI.TextStyle({
                                 fontSize: 9,
                                 fill: '#3fb950',
@@ -141,16 +146,53 @@ export default function SimulationCanvas() {
                             })
                         })
                         label.anchor.set(0.5, 1)
-                        label.x = food.position.x
-                        label.y = food.position.y - radius - 4
-                        gfx.addChild(label)
+                        label.x = 0
+                        label.y = -radius - 4
+                        container.addChild(label)
                     }
 
-                    foodMap.set(food.id, gfx)
-                    scene.addChild(gfx)
+                    container.x = food.position.x
+                    container.y = food.position.y
+                    foodMap.set(food.id, container)
+                    scene.addChild(container)
+
+                    // Carrega avatar depois — substitui o fallback quando pronto
+                    if (food.repoOwnerAvatar && !food.discovered) {
+                        const img = new Image()
+                        img.crossOrigin = 'anonymous'
+                        img.src = `/api/github/avatar?url=${encodeURIComponent(food.repoOwnerAvatar)}`
+
+                        img.onload = () => {
+                            if (!foodMap.has(food.id)) return
+
+                            // Desenha num canvas circular
+                            const size = Math.ceil(radius * 2)
+                            const cv = document.createElement('canvas')
+                            cv.width = size
+                            cv.height = size
+                            const ctx = cv.getContext('2d')!
+                            ctx.beginPath()
+                            ctx.arc(size / 2, size / 2, radius, 0, Math.PI * 2)
+                            ctx.closePath()
+                            ctx.clip()
+                            ctx.drawImage(img, 0, 0, size, size)
+
+                            // Cria textura do canvas — sem CORS, sem mask
+                            const texture = PIXI.Texture.from(cv)
+                            const sprite = new PIXI.Sprite(texture)
+                            sprite.anchor.set(0.5)
+
+                            container.removeChildAt(1)
+                            container.addChildAt(sprite, 1)
+                        }
+
+                        img.onerror = (e) => {
+                            console.error('Erro ao carregar avatar:', e)
+                        }
+                    }
                 })
 
-                if (!scene.getChildByName('mound')) {
+                if (!scene.getChildByLabel('mound')) {
                     const mound = new PIXI.Graphics()
                     mound.label = 'mound'
                     mound.circle(colony.x, colony.y, 14)

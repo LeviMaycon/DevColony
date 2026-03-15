@@ -77,7 +77,8 @@ export const useWorldStore = create<WorldState>((set, get) => ({
                 oldAnt.state === 'returning' &&
                 newAnt.state === 'exploring' &&
                 oldAnt.targetFood &&
-                !collectedRepos.find((r) => r.id === oldAnt.targetFood!.id)
+                !collectedRepos.find((r) => r.id === oldAnt.targetFood!.id) &&
+                !newlyCollected.find((r) => r.id === oldAnt.targetFood!.id)
             ) {
                 newlyCollected.push(oldAnt.targetFood)
             }

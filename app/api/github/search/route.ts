@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+async function avatarToBase64(url: string): Promise<string | null> {
+    try {
+        const res = await fetch(url + '&s=64')
+        if (!res.ok) return null
+        const buffer = await res.arrayBuffer()
+        const base64 = Buffer.from(buffer).toString('base64')
+        const mime = res.headers.get('Content-Type') ?? 'image/png'
+        return `data:${mime};base64,${base64}`
+    } catch {
+        return null
+    }
+}
+
 export async function GET(req: NextRequest) {
     const query = req.nextUrl.searchParams.get('q')
     if (!query) return NextResponse.json({ error: 'query obrigatória' }, { status: 400 })
 
-    const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&per_page=50`
+    const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&per_page=100`
 
     const res = await fetch(url, {
         headers: {
@@ -13,23 +26,23 @@ export async function GET(req: NextRequest) {
         },
     })
 
-    if (!res.ok) {
-        return NextResponse.json({ error: 'Erro na API do GitHub' }, { status: res.status })
-    }
+    if (!res.ok) return NextResponse.json({ error: 'Erro na API do GitHub' }, { status: res.status })
 
     const data = await res.json()
 
-    // retorna apenas o necessario
-    const repos = data.items.map((item: any) => ({
-        id: String(item.id),
-        repoName: item.full_name,
-        repoUrl: item.html_url,
-        repoStars: item.stargazers_count,
-        repoLanguage: item.language ?? null,
-        repoOwner: item.owner?.login ?? null,
-        repoCreatedAt: item.created_at ? new Date(item.created_at).getFullYear() : null,
-        description: item.description ?? null,
-    }))
+    const repos = await Promise.all(
+        data.items.map(async (item: any) => ({
+            id: String(item.id),
+            repoName: item.full_name,
+            repoUrl: item.html_url,
+            repoStars: item.stargazers_count,
+            repoLanguage: item.language ?? null,
+            repoOwner: item.owner?.login ?? null,
+            repoOwnerAvatar: await avatarToBase64(item.owner?.avatar_url ?? ''),
+            repoCreatedAt: item.created_at ? new Date(item.created_at).getFullYear() : null,
+            description: item.description ?? null,
+        }))
+    )
 
     return NextResponse.json({ repos })
 }
