@@ -1,6 +1,6 @@
 # DevColony
 
-Uma simulação de colônia de formigas que busca repositórios no GitHub como "comida". As formigas exploram o canvas, encontram repos e os carregam de volta ao formigueiro — usando o algoritmo ACO (Ant Colony Optimization).
+Uma simulação de colônia de insetos que busca repositórios no GitHub como "comida". Os insetos exploram o canvas, encontram repos e os carregam de volta ao formigueiro — usando o algoritmo ACO (Ant Colony Optimization).
 
 ![DevColony Preview](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js) ![Pixi.js](https://img.shields.io/badge/Pixi.js-v8-e72264?style=flat-square) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript) ![Zustand](https://img.shields.io/badge/Zustand-5-orange?style=flat-square)
 
@@ -11,8 +11,8 @@ Uma simulação de colônia de formigas que busca repositórios no GitHub como "
 1. Você digita um tópico (ex: `fire simulation python`)
 2. A simulação busca os 100 repositórios mais populares do GitHub com esse tema
 3. Cada repo aparece como uma "comida" espalhada pelo canvas
-4. As formigas exploram, encontram os repos e os carregam de volta ao formigueiro
-5. O painel lateral mostra quais formigas estão carregando o quê e quais repos já foram coletados
+4. As insetos exploram, encontram os repos e os carregam de volta ao formigueiro
+5. O painel lateral mostra quais insetos estão carregando o quê e quais repos já foram coletados
 
 O tamanho de cada comida é proporcional às stars do repo. Trilhas de feromônio se formam nos caminhos mais usados e evaporam com o tempo.
 
@@ -66,7 +66,7 @@ Acesse [http://localhost:3000](http://localhost:3000).
 src/
   core/
     simulation/
-      Ant.ts          — lógica e visual das formigas
+      Ant.ts          — lógica e visual dos insetos
       World.ts        — estado global da simulação (Zustand)
       Pheromone.ts    — grid de feromônio com evaporação
       types.ts        — interfaces TypeScript
@@ -75,7 +75,7 @@ src/
         SimulationCanvas.tsx     — canvas Pixi.js principal
         SimulationCanvasWrapper.tsx
       ui/
-        SimulationSidebar.tsx    — painéis de formigas e formigueiro
+        SimulationSidebar.tsx    — painéis de insetos e formigueiro
         SearchBar.tsx            — busca de tópicos
     hooks/
       useGitHubSearch.ts         — integração com a API do GitHub
@@ -87,20 +87,20 @@ app/
   page.tsx
   layout.tsx
 public/
-  ant-sprite.png      — sprite sheet das formigas
+  ant-sprite.png      — sprite sheet dos insetos
 ```
 
 ---
 
 ## Algoritmo
 
-As formigas implementam uma versão simplificada do **ACO (Ant Colony Optimization)**:
+As insetos implementam uma versão simplificada do **ACO (Ant Colony Optimization)**:
 
 - **Exploração** — cada formiga se move com leve aleatoriedade (`WANDER_STRENGTH`)
 - **Detecção** — ao chegar perto de um repo não descoberto, a formiga muda para estado `returning`
 - **Retorno** — a formiga navega diretamente de volta à colônia depositando feromônio
 - **Evaporação** — o feromônio evapora gradualmente, favorecendo trilhas mais ativas
-- **Rebote** — formigas ricocheteiam nas bordas do canvas
+- **Rebote** — insetos ricocheteiam nas bordos do canvas
 
 ---
 
@@ -109,7 +109,7 @@ As formigas implementam uma versão simplificada do **ACO (Ant Colony Optimizati
 Em `src/core/simulation/World.ts`:
 
 ```ts
-const ANT_COUNT        = 20     // número de formigas
+const ANT_COUNT        = 20     // número de insetos
 const EVAPORATION_RATE = 0.008  // velocidade de evaporação do feromônio
 const DEPOSIT_AMOUNT   = 0.15   // quantidade de feromônio depositada por tick
 ```
@@ -117,13 +117,13 @@ const DEPOSIT_AMOUNT   = 0.15   // quantidade de feromônio depositada por tick
 Em `src/core/simulation/Ant.ts`:
 
 ```ts
-const SPEED           = 2    // velocidade base das formigas
+const SPEED           = 2    // velocidade base dos insetos
 const WANDER_STRENGTH = 0.4  // aleatoriedade do movimento de exploração
 ```
 
 ---
 
-## Features planejadas
+## Features planejados
 
 - [ ] Tamanho da formiga proporcional às stars do repo
 - [ ] Tooltip com preview do repo ao passar o mouse
