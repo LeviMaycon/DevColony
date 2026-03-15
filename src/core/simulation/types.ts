@@ -14,8 +14,16 @@ export interface FoodSource {
     repoLanguage?: string
     repoOwner?: string
     repoOwnerAvatar?: string
+    repoOwnerBio?: string     
+    repoOwnerLocation?: string
+    repoOwnerRepos?: number   
     repoCreatedAt?: string
     description?: string
+    repoForks?: number        
+    repoWatchers?: number     
+    repoOpenIssues?: number   
+    repoLastCommit?: string  
+    repoReadme?: string      
 }
 
 export type AntState = 'exploring' | 'returning'
