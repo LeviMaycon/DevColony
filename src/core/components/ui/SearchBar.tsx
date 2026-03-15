@@ -6,6 +6,7 @@ import { generatePositions } from '../../simulation/placement'
 import { useGitHubSearch } from '../../hooks/useGitHubSearch'
 import { useShareSearch } from '../../hooks/useShareSearch'
 import { useSearchHistory } from '../../hooks/useSearchHistory'
+import { exportWorldExcel } from '../../utils/exportWorldExcel'
 
 export default function SearchBar() {
     const [query, setQuery]           = useState('')
@@ -107,6 +108,10 @@ export default function SearchBar() {
         setTimeout(() => setCopied(false), 2000)
     }
 
+    function handleExportWorld() {
+        exportWorldExcel(foods)
+    }
+
     const currentYear = new Date().getFullYear()
     const years = Array.from({ length: 15 }, (_, i) => String(currentYear - i))
 
@@ -175,7 +180,7 @@ export default function SearchBar() {
                 </button>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex col-auto items-center gap-1">
                 <button
                     onClick={handleTrending}
                     disabled={loading}
@@ -193,6 +198,19 @@ export default function SearchBar() {
                     >
                         {copied ? '✓ copiado' : '~compartilhar'}
                     </button>
+                )}
+
+                {foods.length > 0 && (
+                    <>
+                        <span className="text-[#30363d] text-[10px]">·</span>
+
+                        <button
+                            onClick={handleExportWorld}
+                            className="cursor-pointer text-[13px] text-[#484f58] hover:text-[#8b949e] hover:underline transition-colors"
+                        >
+                            ~export-map
+                        </button>
+                    </>
                 )}
 
                 {foods.length > 0 && (
