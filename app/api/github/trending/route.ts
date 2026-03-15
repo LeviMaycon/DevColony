@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 async function avatarToBase64(url: string): Promise<string | null> {
     try {
@@ -13,17 +13,13 @@ async function avatarToBase64(url: string): Promise<string | null> {
     }
 }
 
-export async function GET(req: NextRequest) {
-    const query = req.nextUrl.searchParams.get('q')
-    const year  = req.nextUrl.searchParams.get('year')
+export async function GET() {
+    const since = new Date()
+    since.setDate(since.getDate() - 7)
+    const dateStr = since.toISOString().split('T')[0]
 
-    if (!query) return NextResponse.json({ error: 'query obrigatória' }, { status: 400 })
+    const url = `https://api.github.com/search/repositories?q=created:>${dateStr}&sort=stars&order=desc&per_page=100`
 
-    let q = encodeURIComponent(query)
-    if (year) q += encodeURIComponent(` created:${year}-01-01..${year}-12-31`)
-
-    const url = `https://api.github.com/search/repositories?q=${q}&sort=stars&per_page=100`
-    
     const res = await fetch(url, {
         headers: {
             Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,

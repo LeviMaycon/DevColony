@@ -1,100 +1,211 @@
 'use client'
 
-import { useState } from 'react'
-import { useGitHubSearch } from '../../hooks/useGitHubSearch'
+import { useState, useEffect, useRef } from 'react'
 import { useWorldStore } from '../../simulation/World'
-import { AlertCircle, Loader2, Search, TerminalSquare } from 'lucide-react'
-import { Alert, AlertDescription } from '@/src/core/components/ui/alert'
-import { Badge } from '@/src/core/components/ui/badge'
-import { Button } from '@/src/core/components/ui/button'
-import { Input } from '@/src/core/components/ui/input'
-import { cn } from '@/lib/utils'
+import { generatePositions } from '../../simulation/placement'
+import { useGitHubSearch } from '../../hooks/useGitHubSearch'
+import { useShareSearch } from '../../hooks/useShareSearch'
+import { useSearchHistory } from '../../hooks/useSearchHistory'
 
 export default function SearchBar() {
-    const [query, setQuery] = useState('')
-    const { search, loading, error } = useGitHubSearch()
-    const { addFood, foods } = useWorldStore()
+    const [query, setQuery]           = useState('')
+    const [yearFilter, setYearFilter] = useState<string>('')
+    const [showHistory, setShowHistory] = useState(false)
+    const [copied, setCopied]         = useState(false)
+    const { search, loading, error }  = useGitHubSearch()
+    const { addFood, clearFoods, foods } = useWorldStore()
+    const { history, addToHistory, removeFromHistory } = useSearchHistory()
+    const { share, getQueryFromUrl }  = useShareSearch()
+    const inputRef = useRef<HTMLInputElement>(null)
 
-    async function handleSearch() {
-        if (!query.trim()) return
-        useWorldStore.getState().clearFoods()
-        const newFoods = await search(query)
-        newFoods.forEach((food) => addFood(food))
+    // Lê query da URL ao montar
+    useEffect(() => {
+        const q = getQueryFromUrl()
+        if (q) {
+            setQuery(q)
+            handleSearch(q)
+        }
+    }, [])
+
+    async function handleSearch(q?: string) {
+        const term = (q ?? query).trim()
+        if (!term) return
+
+        clearFoods()
+        addToHistory(term)
+        setShowHistory(false)
+
+        const W = window.innerWidth
+        const H = window.innerHeight
+
+        const url = yearFilter
+            ? `/api/github/search?q=${encodeURIComponent(term)}&year=${yearFilter}`
+            : `/api/github/search?q=${encodeURIComponent(term)}`
+
+        const res  = await fetch(url)
+        const data = await res.json()
+        const repos = data.repos ?? []
+        const positions = generatePositions(repos.length, W, H)
+
+        repos.forEach((repo: any, i: number) => {
+            addFood({
+                id: repo.id,
+                position: positions[i],
+                value: Math.min(10 + Math.log2(repo.repoStars + 1) * 4, 30),
+                discovered: false,
+                repoName: repo.repoName,
+                repoUrl: repo.repoUrl,
+                repoStars: repo.repoStars,
+                repoLanguage: repo.repoLanguage,
+                repoOwner: repo.repoOwner,
+                repoOwnerAvatar: repo.repoOwnerAvatar,
+                repoCreatedAt: repo.repoCreatedAt,
+                description: repo.description,
+            })
+        })
+
+        // Atualiza URL sem recarregar
+        const url2 = new URL(window.location.href)
+        url2.searchParams.set('q', term)
+        window.history.replaceState({}, '', url2.toString())
     }
 
-    function handleKeyDown(e: React.KeyboardEvent) {
-        if (e.key === 'Enter') handleSearch()
+    async function handleTrending() {
+        clearFoods()
+        setQuery('trending')
+        setShowHistory(false)
+
+        const W = window.innerWidth
+        const H = window.innerHeight
+
+        const res  = await fetch('/api/github/trending')
+        const data = await res.json()
+        const repos = data.repos ?? []
+        const positions = generatePositions(repos.length, W, H)
+
+        repos.forEach((repo: any, i: number) => {
+            addFood({
+                id: repo.id,
+                position: positions[i],
+                value: Math.min(10 + Math.log2(repo.repoStars + 1) * 4, 30),
+                discovered: false,
+                repoName: repo.repoName,
+                repoUrl: repo.repoUrl,
+                repoStars: repo.repoStars,
+                repoLanguage: repo.repoLanguage,
+                repoOwner: repo.repoOwner,
+                repoOwnerAvatar: repo.repoOwnerAvatar,
+                repoCreatedAt: repo.repoCreatedAt,
+                description: repo.description,
+            })
+        })
     }
+
+    function handleShare() {
+        share(query)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+    }
+
+    const currentYear = new Date().getFullYear()
+    const years = Array.from({ length: 15 }, (_, i) => String(currentYear - i))
 
     return (
         <div className="flex flex-col gap-2 w-full font-mono">
-            <div className="flex items-center gap-1.5 text-[10px] text-[#484f58] uppercase tracking-widest">
-                <TerminalSquare className="w-3 h-3" />
-                <span>tópico de busca</span>
-            </div>
             <div className="flex gap-2">
                 <div className="relative flex-1">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#484f58] pointer-events-none" />
-                    <Input
+                    <input
+                        ref={inputRef}
+                        type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        onKeyDown={handleKeyDown}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                        onFocus={() => setShowHistory(true)}
+                        onBlur={() => setTimeout(() => setShowHistory(false), 150)}
                         placeholder="ex: fire simulation python"
-                        disabled={loading}
-                        className={cn(
-                            'pl-8 h-9 text-[12px] font-mono',
-                            'bg-[#0d1117] border-[#30363d] text-[#c9d1d9]',
-                            'placeholder:text-[#3d444d]',
-                            'focus-visible:ring-1 focus-visible:ring-[#58a6ff]/40 focus-visible:border-[#58a6ff]',
-                            'disabled:opacity-50 disabled:cursor-not-allowed',
-                            'transition-colors duration-150',
-                        )}
+                        className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-[12px] text-[#c9d1d9] placeholder:text-[#484f58] focus:outline-none focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]/30 transition-colors"
                     />
+
+                    {/* Histórico dropdown */}
+                    {showHistory && history.length > 0 && (
+                        <div className="absolute top-full mt-1 w-full bg-[#161b22] border border-[#30363d] rounded-md overflow-hidden z-50">
+                            {history.map((q) => (
+                                <div
+                                    key={q}
+                                    className="flex items-center justify-between px-3 py-2 hover:bg-[#21262d] cursor-pointer group"
+                                    onMouseDown={() => {
+                                        setQuery(q)
+                                        handleSearch(q)
+                                    }}
+                                >
+                                    <span className="text-[11px] text-[#8b949e]">{q}</span>
+                                    <button
+                                        onMouseDown={(e) => {
+                                            e.stopPropagation()
+                                            removeFromHistory(q)
+                                        }}
+                                        className="text-[10px] text-[#484f58] hover:text-[#f85149] opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
-                <Button
-                    onClick={handleSearch}
-                    disabled={loading || !query.trim()}
-                    size="sm"
-                    className={cn(
-                        'h-9 px-4 text-[12px] font-mono font-medium',
-                        'bg-[#238636] hover:bg-[#2ea043] active:bg-[#1a7f37]',
-                        'border border-[#2ea043] hover:border-[#3fb950]',
-                        'text-[#f0f6fc]',
-                        'disabled:opacity-40 disabled:cursor-not-allowed',
-                        'transition-all duration-150',
-                    )}
+                {/* Filtro por ano */}
+                <select
+                    value={yearFilter}
+                    onChange={(e) => setYearFilter(e.target.value)}
+                    className="bg-[#0d1117] border border-[#30363d] rounded-md px-2 py-2 text-[11px] text-[#8b949e] focus:outline-none focus:border-[#58a6ff] transition-colors"
                 >
-                    {loading ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                        'Buscar'
-                    )}
-                </Button>
+                    <option value="">Ano</option>
+                    {years.map((y) => (
+                        <option key={y} value={y}>{y}</option>
+                    ))}
+                </select>
+
+                <button
+                    onClick={() => handleSearch()}
+                    disabled={loading || !query.trim()}
+                    className="px-4 py-2 rounded-md text-[12px] font-medium transition-all bg-[#238636] hover:bg-[#2ea043] border border-[#2ea043] text-[#f0f6fc] disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                    {loading ? <span className="text-[#3fb950]">···</span> : 'Buscar'}
+                </button>
             </div>
-            {error && (
-                <Alert className="py-2 px-3 bg-[#160b0b] border-[#f8514926] rounded-md">
-                    <AlertCircle className="w-3 h-3 text-[#f85149]" />
-                    <AlertDescription className="text-[11px] text-[#f85149] font-mono ml-1">
-                        {error}
-                    </AlertDescription>
-                </Alert>
-            )}
-            {foods.length > 0 && !error && (
-                <div className="flex items-center gap-2">
-                    <Badge
-                        variant="outline"
-                        className={cn(
-                            'text-[10px] font-mono px-2 py-0',
-                            'bg-[#0d1117] border-[#30363d] text-[#3fb950]',
-                            'rounded-sm tabular-nums',
-                        )}
+
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={handleTrending}
+                    disabled={loading}
+                    className="cursor-pointer text-[13px] text-[#484f58] hover:text-[#8b949e] hover:underline transition-colors flex items-center gap-1 disabled:opacity-40"
+                >
+                    ~trending
+                </button>
+
+                <span className="text-[#30363d] text-[10px]">·</span>
+
+                {query && (
+                    <button
+                        onClick={handleShare}
+                        className="cursor-pointer text-[13px] text-[#484f58] hover:text-[#8b949e] hover:underline transition-colors flex items-center gap-1"
                     >
-                        {foods.length} repos
-                    </Badge>
-                    <span className="text-[10px] text-[#484f58]">no campo</span>
-                </div>
-            )}
+                        {copied ? '✓ copiado' : '~compartilhar'}
+                    </button>
+                )}
+
+                {foods.length > 0 && (
+                    <>
+                        <span className="text-[#30363d] text-[10px]">·</span>
+                        <span className="text-[10px] text-[#484f58] tabular-nums">
+                            {foods.length} repos no campo
+                        </span>
+                    </>
+                )}
+            </div>
+
+            {error && <p className="text-[10px] text-[#f85149]">{error}</p>}
         </div>
     )
 }

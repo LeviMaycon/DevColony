@@ -1,7 +1,7 @@
 import { AntEntity, FoodSource, Vector2 } from "./types"
 import * as PIXI from 'pixi.js'
 
-const SPEED = 0.7;
+const SPEED = 6;
 const WANDER_STRENGTH = 0.4;
 
 const SPRITE_COLS   = 12
