@@ -4,6 +4,7 @@ Uma simulação de colônia de insetos que busca repositórios no GitHub como "c
 
 ![DevColony Preview](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js) ![Pixi.js](https://img.shields.io/badge/Pixi.js-v8-e72264?style=flat-square) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript) ![Zustand](https://img.shields.io/badge/Zustand-5-orange?style=flat-square)
 
+![Demo](./public/demo.gif)
 ---
 
 ## Como funciona
