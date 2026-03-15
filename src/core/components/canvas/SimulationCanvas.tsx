@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import * as PIXI from 'pixi.js'
 import { useWorldStore } from '../../simulation/World'
 import { AntGraphic, createAntGraphic, updateAntLegs } from '../../simulation/Ant'
+import { generatePositions } from '../../simulation/placement'
 
 const LANG_COLORS: Record<string, number> = {
     Python: 0x3572A5,
@@ -75,13 +76,14 @@ export default function SimulationCanvas() {
                 .then((r) => r.json())
                 .then((data) => {
                     if (destroyed) return
-                    data.repos?.forEach((repo: any) => {
+                    const repos = data.repos ?? []
+                    const positions = generatePositions(repos.length, W, H)
+
+                    repos.forEach((repo: any, i: number) => {
+                        const { x, y } = positions[i]
                         useWorldStore.getState().addFood({
                             id: repo.id,
-                            position: {
-                                x: 60 + Math.random() * (W - 120),
-                                y: 60 + Math.random() * (H - 120),
-                            },
+                            position: { x, y },
                             value: Math.min(10 + Math.log2(repo.repoStars + 1) * 4, 30),
                             discovered: false,
                             repoName: repo.repoName,

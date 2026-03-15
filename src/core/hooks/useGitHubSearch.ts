@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { FoodSource } from '../simulation/types'
+import { generatePositions } from '../simulation/placement'
 
 interface GitHubRepo {
     id: string
@@ -26,13 +27,12 @@ export function useGitHubSearch() {
             if (!res.ok) throw new Error('Falha na busca')
 
             const data = await res.json()
+            const repos = data.repos as GitHubRepo[]
+            const positions = generatePositions(repos.length, window.innerWidth, window.innerHeight)
 
-            return (data.repos as GitHubRepo[]).map((repo) => ({
+            return repos.map((repo, i) => ({
                 id: repo.id,
-                position: {
-                    x: 60 + Math.random() * (window.innerWidth - 120),
-                    y: 60 + Math.random() * (window.innerHeight - 120),
-                },
+                position: positions[i],
                 value: Math.min(10 + Math.log2(repo.repoStars + 1) * 4, 30),
                 discovered: false,
                 repoName: repo.repoName,
